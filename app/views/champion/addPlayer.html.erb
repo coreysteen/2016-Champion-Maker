@@ -1,0 +1,20 @@
+<h1>Add a Player</h1>
+
+<form action="/champion/about">
+
+Name: <input type="text" name="playerName"/> <br />
+
+Team: <select id="combobox" class="form-control" data-style="btn-info" name="team">
+<% Team.getSortedTeams.each do |team| %>
+     <option value="<%= team.name %>" ><%= team.name %></option>
+<% end %>
+</select><p />
+
+
+Positions: <select id="combobox" class="form-control" data-style="btn-info" name="position">
+<% Position.getSortedPositions.each do |pos| %>
+     <option value="<%= pos.name %>" ><%= pos.name %></option>
+<% end %>
+</select><br /> 
+<input class="btn btn-primary btn-md" type="submit" value="Select Player">
+</form>

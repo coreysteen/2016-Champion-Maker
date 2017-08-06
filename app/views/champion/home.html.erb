@@ -1,0 +1,476 @@
+
+<style>
+.scrollable-menu {
+    height: auto;
+    max-height: 400px;
+    overflow-x: hidden;
+}
+.input-xs {
+  width: 105px;
+}
+
+</style>
+<%
+	spName = @selectedPlayer.name
+	spTeam = @selectedPlayer.getTeam
+	spPostion = @selectedPlayer.getPosition
+	spADP = @selectedPlayer.snakeRound
+	spPositionTier = @selectedPlayer.tier
+	spOverallRank = @selectedPlayer.playerID
+	spPositionRank = @selectedPlayer.positionRank
+	spEstimatedValue = @selectedPlayer.estimatedValue
+	spStandardDeviation = @selectedPlayer.stdDev
+
+
+%>
+
+<!--Player menu **********************-->
+<div class="row" style="border: 2px solid black; background-color: #33cc33;">
+  <div class="col-sm-1">
+  </div>
+  <form action="/champion/home">
+  <div class="col-sm-2" style="; padding-top: 10px">
+  	<div class="dropdown vertical-top">
+  		
+  		
+  		<label>Select Nominated Player: </label><br/>
+  		<select id="combobox" class="form-control" data-style="btn-info" name="selectedPlayer">
+    		<% @undraftedPlayers.each do |player| %>
+    			<% if player.name == spName %>
+      		    <option value="<%= player.playerID.to_s %>" selected><%= player.name %></option>
+      		    <% elsif %>      		    
+      		    <option value="<%= player.playerID.to_s %>"><%= player.name %></option>
+      		    <% end %>
+      		<% end %>
+      	</select><br/>
+      	<input class="btn btn-primary btn-md" type="submit" value="Select Player">
+      	
+	</div>
+	</div>
+	<div class="col-sm-1" style="padding-top: 10px">
+		
+      	
+	</div>
+</form>
+
+<!--Owner/Draft Menu menu **********************-->
+  <form action="/champion/draft">
+  <div class="col-sm-2">
+	    <b>Select Owner:</b><br>
+		<select class="form-control" data-style="btn-info" name="owner">
+			<option value=""></option>
+
+			<% @owners.each do |o| %>
+      		   		<option value="<%= o.name %>"><%= o.name %> </option>
+        	<% end %>
+		</select>
+	</div>
+	
+	<div class="col-xs-2">
+		<b>Draft Amount($):</b> 
+		<input type="hidden" name="player" value="<%= spOverallRank %>">
+		
+ 			<input class="form-control" name="draftAmount" type="text">
+		
+		<div class="checkbox">
+  			<label><input type="checkbox" name="keeper" value="yes"><b>Keeper?</b></label>
+		</div>
+		
+	</div>
+	<div class=" pull-left col-xs-2">
+	<br>
+		<input class="btn btn-primary btn-lg btn-block" type="submit" value="Draft Player">
+	</div>
+	<div class="col-xs-1"> </div>
+
+	</form>
+<!--Owner/Draft Menu menu **********************-->
+
+
+</div>
+
+
+
+
+
+
+<div class="container">
+   <ul class="nav nav-tabs">
+    <li class="active"><a data-toggle="tab" href="#home">Player Info</a></li>
+    <li><a data-toggle="tab" href="#menu1">Current Team</a></li>
+    <li><a data-toggle="tab" href="#menu2">Draft Board</a></li>
+    <li><a data-toggle="tab" href="#menu3">Available Players</a></li>
+  </ul>
+
+  <div class="tab-content">
+    
+<!--*********Player info tab content ****************** -->
+    <div id="home" class="tab-pane fade in active">
+
+		<div class="row">
+  			<h2><%= spName %></h2>
+
+  			<table class="table table-bordered table-striped">
+    		<thead>
+      			<tr>
+        			<th class="text-center">Position (Team)</th>
+        			<th class="text-center">Overall Rank</th>
+        			<th class="text-center">Position Rank</th>
+        			<th class="text-center">Tier</th>
+        			<th class="text-center">Snake Draft ADP</th>
+      			</tr>
+    		</thead>
+    		<tbody>
+      			<tr>
+      				<% posColor = @selectedPlayer.getPositionBGColor %> 
+        			<td  style="font-size: 20px; background-color:<%= posColor %>" class="text-center"><%= spPostion.name + " (" + spTeam.name + ")" %></td>
+        			<td style="font-size: 20px" class="text-center"><%= spOverallRank %></td>
+        			<td style="font-size: 20px" class="text-center"><%= spPositionRank %></td>
+        			<td style="font-size: 20px" class="text-center"><%= spPositionTier %></td>
+        			<td style="font-size: 20px" class="text-center"><%= spADP %></td>
+      			</tr>
+      			
+    		</tbody>
+  			</table>
+		</div>
+
+		<div class="row">
+			<table class="table table-bordered table-striped">
+    		<thead>
+      			<tr>
+      				<th class="text-center" style="background-color:#96F9AE">Good</th>
+        			<th class="text-center" style="background-color:#F7FA87">Projected Range</th>
+        			<th class="text-center" style="background-color:#F9AB96">Bad</th>
+      			</tr>
+    		</thead>
+    		<tbody>
+    			<tr>
+    				<td class="text-center" style="background-color:#96F9AE; font-size: 20px"><%= @selectedPlayer.getLowRange %></td>
+        			<td class="text-center" style="background-color:#F7FA87; font-size: 20px"><strong><%= @selectedPlayer.getExpectedRange %></strong></td>
+        			<td class="text-center" style="background-color:#F9AB96; font-size: 20px"><%= @selectedPlayer.getHighRange %></td>
+    			</tr>
+    			<tr>
+    				<th colspan=3 class="text-center" style="background-color:#DEFBFB">TRENDING</th>
+    			</tr>
+    			<tr>
+    				<th class="text-center">Metric</th>
+    				<th class="text-center">Entire Draft</th>
+    				<th class="text-center">Trending (latest 3)</th>
+    			</tr>
+      			<tr>
+        			<td style="font-size: 17px" class="text-right"><strong>Overall</strong></td>
+        			<% percent = Player.getPercentageVariance("overall",nil, @draftedPlayers, nil, nil, nil)
+        			   if percent != nil
+        			   	updatedEstimate = (spEstimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   end		 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+        			<% percent = Player.getPercentageVariance("overall","yes", @draftedPlayers, nil, nil, nil)
+        			   if percent != nil
+        			   	updatedEstimate = (spEstimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+      			</tr>
+      			
+      			<tr>
+        			<td style="font-size: 17px" class="text-right"><strong>Position</strong></td>
+        			<% percent = Player.getPercentageVariance("position", nil, @draftedPlayers, spPostion, nil, nil)
+        			  if percent != nil
+        			   	updatedEstimate = (spEstimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+        			<% percent = Player.getPercentageVariance("position","yes", @draftedPlayers, spPostion, nil, nil)
+        			   if percent != nil
+        			   	updatedEstimate = (spEstimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+      			</tr>
+      			    <td style="font-size: 17px" class="text-right"><strong>Position Tier</strong></td>
+        			<% percent = Player.getPercentageVariance("posTier",nil, @draftedPlayers, spPostion, spPositionTier, nil)
+        			   if percent != nil
+        			   	updatedEstimate = (@selectedPlayer.estimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	%>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+        			<% percent = Player.getPercentageVariance("posTier","yes", @draftedPlayers, spPostion, spPositionTier, nil)
+        			   if percent != nil
+        			   	updatedEstimate = (@selectedPlayer.estimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+      			</tr>
+      			<tr>
+        			<td style="font-size: 17px" class="text-right"><strong>ADP</strong></td>
+        			<% percent = Player.getPercentageVariance("adp",nil, @draftedPlayers, nil, nil, spADP)
+        			   if percent != nil
+        			   	updatedEstimate = (@selectedPlayer.estimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %> %| $<%= updatedEstimate.to_s %></td>
+        			<% percent = Player.getPercentageVariance("adp","yes", @draftedPlayers, nil, nil, spADP)
+        			   if percent != nil
+        			   	updatedEstimate = (@selectedPlayer.estimatedValue * percent).round
+        			   	percent = percent * 100
+        			   	if percent > 100
+        			   		bgcolor = "#FAC3AE"
+        			   	else
+        			   		bgcolor = "#85F896"
+        			   	end
+        			   else
+        			   	percent = "n/a"
+        			   	updatedEstimate = "n/a"
+        			   	bgcolor = "#FFFFFF"
+        			   	end	 %>
+        			<td style="font-size: 17px; background-color:<%= bgcolor %>" class="text-center"> <%= percent %>% | $<%= updatedEstimate.to_s %></td>
+      			</tr>
+      		</tbody>
+  			</table>
+
+		</div>
+		<div class="row">
+			<table class="table table-condensed table-bordered">
+    		<thead>
+      			<tr>
+      				<th class="text-center"> </th>
+      			<% @owners.each do |o| %>
+      		   		<th class="text-center" style="background-color:#33ccff"><%= o.name %></th>
+        		<% end %>
+      			</tr>
+      		</thead>
+      		<tbody>
+      			<tr>
+      				<% #posColor = @selectedPlayer.getPositionBGColor %> 
+					<td class="text-center" style="font-size: 17px; background-color:<%= posColor %>"><%= spPostion.name %></td>
+					<% @owners.each do |o| %>
+						
+      		   			<td class="text-center"  style="font-size: 17px;""><%= o.getDraftedAtPosition(spPostion) %></td>
+        			<% end %>
+      				
+      			</tr>
+      			
+      		</tbody>
+      		</table>
+      	</div>
+
+    </div>
+
+
+<!--*********My Team tab content ****************** -->
+    <div id="menu1" class="tab-pane fade">
+      <h3>My Current Team</h3>
+      	<div class="col-sm-6">
+      	<table class="table condensed table-bordered table-striped">
+      		<thead>
+      			<tr>
+      				<th class="text-center">Remaining Budget:</th>
+      				<th class="text-center">Max. Bid:</th>
+      				<th class="text-center">Roster Filled:</th>
+      				<th class="text-center">Avg. p/Open Spot</th>
+      			</tr>      			
+      		</thead>
+      		<tbody>
+      		      			<tr>
+      		      			 	<% owner = Owner.where(name: "Corey").first %>
+      				<td class="text-center"><h3>$<%= owner.getRemainingBudget %></h3></td>
+      				<td class="text-center"><h3>$<%= owner.getMaxBid %></h3></td>
+      				<td class="text-center"><h3><%= owner.getNumberPlayersDrafted %> of 18</h3></td>
+      				<td class="text-center"><h3>$<%= owner.getAveragePerOpenRosterSpot %></h3></td>
+      			</tr>
+      		</tbody>
+      	</table>
+      	</div>
+		<table class="table table-condensed table-bordered" style="width:51%">
+    		<thead>
+    			
+      			<tr class="success">
+        			<th>Player</th>
+        			<th class="text-center">Estimated Pre-draft Cost</th>
+        			<th class="text-center">Actual Cost</th>
+        			<th class="text-center">o/u</th>
+      			</tr>
+    		</thead>
+    		<tbody>
+    		
+
+      			<% Position.getSortedPositions.each do |pos|
+      				bgcolor = pos.getPositionBGColor 
+      			%>
+
+				<tr>
+    				<th colspan="5" style="background-color:<%= bgcolor %>"><%= pos.name %></th>
+    			</tr>
+      		
+      			<% owner.getPlayersAtPosition(Position.getPositionByName(pos.name)).each do |player| %>
+    			<tr>
+      				<td><b><%= player.name %> (<%= player.team.name %>)</b></td>
+        			<td class="text-center"><b>$<%= player.estimatedValue %></b></td>
+        			<td class="text-center"><b>$<%= player.getDraftAmount %></b></td>
+        			<td class="text-center"><b>$<%= player.estimatedValue - player.getDraftAmount %></b></td>
+      			</tr>
+      			<% end %>
+      			<% end %>
+
+    		</tbody>
+  		</table>
+  
+
+
+          	
+
+	  </p>
+    </div>
+ <!--*********Draft Board tab content ****************** -->   
+    <div id="menu2" class="tab-pane fade">
+      	<h2>Draft Board</h2>
+      	 
+        
+         
+         <% colCount = 0 %>
+      	<% Owner.getSortedOwners.each do |owner| %>
+      	<% if colCount == 0 || (colCount % 4 == 0) %>
+      	<div class="row">
+      	<% end %>
+      		<div class="col-md-3 ">
+      		<table class="table condensed table-bordered ">
+    		
+    			<thead>
+      				<tr>
+        				<th style="background-color:#000000; color:#ffffff" colspan=3 class=" text-center"><%= owner.name %></th>
+        			</tr>
+        			<tr style="padding: 1px">
+        				<th style="background-color:#ffff99" class="small text-center"><strong>Rem. Budget:</strong></th>
+        				<th style="background-color:#ffff99" class="small text-center"><strong>Max Bid:</strong></th>
+        				<th style="background-color:#ffff99" class="small text-center"><strong>Avg p/Rpick:</strong></th>
+      				</tr>
+      				<tr>
+        				<th class="small text-center"><h4>$<%= owner.getRemainingBudget %></h4></th>
+        				<th class="small text-center"><h4>$<%= owner.getMaxBid %></h4></th>
+        				<th class="small text-center"><h4>$<%= owner.getAveragePerOpenRosterSpot %></h4></th>
+      				</tr>
+    			</thead>
+    			<tbody>
+  				<% owner.getMyPlayersSortedByPosition.each do |player| %>
+  				<% bgcolor = player.getPositionBGColor %>   		
+
+      			<tr  style="background-color:<%= bgcolor %>">
+        			<td class="small text-center"><%= player.position.name %></td>
+        			<td class="small"><% if player.isKeeper == "yes"%> <b>K-</b><% end %><%= player.name + " (" + player.team.name + ")" %></td>
+        			<td class="small text-center"><b>$<%= player.getDraftAmount %></b></td>
+      			</tr>
+      			<% end %>
+     		
+    			</tbody>
+  			</table>
+  			</div>
+  		<% colCount = colCount.next %>
+  		<% if colCount % 4 == 0 %>
+  		   
+      	  </div> <!-- end of row -->
+      	<% end %>
+  		<% end %>
+  </div>
+  		
+  		 
+    
+ <!--*********Available Players tab content ****************** -->  
+    <div id="menu3" class="tab-pane fade">
+      <h3>Available Players</h3>
+      <table class="table table-bordered table-striped">
+      <thead>
+      	<tr style="background-color:#ffff99">
+      		<th class="text-center">Ovr. Rank</th>
+      		<th class="text-center">Pos. Rank</th>
+      		<th class="text-center">Position</th>
+      		<th class="text-center">Player (Team)</th>
+      		<th class="text-center">Pre-Draft Exp. Value</th>
+      	</tr>
+      </thead>
+      <tbody>
+      <% availablePlayers =  @undraftedPlayers.sort! { |a,b| a.playerID <=> b.playerID } %>
+      <% availablePlayers.each do |player| %>
+      <% posColor = player.getPositionBGColor %>  
+      	<tr>
+      		<td class="text-center"><strong><%= player.playerID %></strong></td>
+      		<td class="text-center"><strong><%= player.positionRank %><strong></td>
+      		<td class="text-center" style="background-color:<%= posColor %>"><strong><%= player.position.name %><strong></td>
+      		<td class="text-center"><strong><%= player.name + "(" + player.team.name + ")" %><strong></td>
+      		<td class="text-center"><strong>$<%= player.estimatedValue %></strong></td>
+      	</tr>
+      	<% end %>
+      </tbody>
+      </table>
+
+
+    </div>
+  </div>
+
+  <!--*********END OF  tab content ****************** -->  
+</div>
+
+
